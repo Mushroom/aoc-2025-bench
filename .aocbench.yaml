@@ -1,0 +1,11 @@
+version: '1'
+author: CodIsAFish
+language: C++
+dockerfile: ".docker/Dockerfile"
+code: "/code"
+workdir: "/code/%day%"
+runonce: rm -rf build && cmake -G"Unix Makefiles" . -Bbuild -D"AOC_DAY=%day%" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_BUILD_TYPE=Release && cmake --build build
+cmd: build/aoc_bench
+daypath: "%day%"
+inputfile: aoc-2025-bench-data/%day%/input.txt
+answerfile: aoc-2025-bench-data/%day%/answers.txt
