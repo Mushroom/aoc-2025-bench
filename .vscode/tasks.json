@@ -12,7 +12,7 @@
                 "${workspaceFolder}/build_${fileDirnameBasename}",
                 "-G",
                 "Visual Studio 17 2022",
-                "-DAOC_DAY=1"
+                "-DAOC_DAY=${fileDirnameBasename}",
             ],
         },
         {
