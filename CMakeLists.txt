@@ -10,7 +10,10 @@ endif()
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(WARNING "CMAKE_CXX_COMPILER is not set to clang. Clang is used for AoCBench, so this may lead to unexpected results.")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -static -O3 -march=native -mtune=native")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -static -O3 -march=native -mtune=native")
+    set_target_properties(aoc-2025-bench PROPERTIES LINK_SEARCH_START_STATIC ON)
+    set_target_properties(aoc-2025-bench PROPERTIES LINK_SEARCH_END_STATIC ON)
+    target_link_options(aoc-2025-bench PRIVATE "-static")
 endif()
 
 # Set the source directory based on AOC_DAY
