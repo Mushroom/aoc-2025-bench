@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <filesystem>
 
 int main(int argc, char* argv[])
 {
@@ -10,18 +11,28 @@ int main(int argc, char* argv[])
     std::cout << "[DEBUG] Loading file from: " << argv[1] << std::endl;
 #endif
 
-    // Open input file
-    std::ifstream inputFileStream(argv[1]);
+    // Open input file, and read into string
+    std::filesystem::path inputFilePath = argv[1];
+    std::ifstream inputFileStream(inputFilePath, std::ios::in | std::ios::binary);
+    const auto fileStreamSize = std::filesystem::file_size(inputFilePath);
+    std::string inputFileContent(fileStreamSize, '\0');
+    inputFileStream.read(inputFileContent.data(), fileStreamSize);
 
     int rotationSteps[5000]; // Assuming a maximum of 5000 steps for static array
     int rotationStepsCount = 0;
 
-    // Read in all lines from the input file
-    std::string inputLine;
-    while(std::getline(inputFileStream, inputLine))
+    // Parse the string into rotation steps
+    for(int sIdx = 0; sIdx < inputFileContent.size(); sIdx++)
     {
-        bool firstCharIsL = (inputLine[0] == 'L');
-        rotationSteps[rotationStepsCount++] = (firstCharIsL ? -1 : 1) * std::stoi(inputLine.substr(1));
+        uint32_t number = 0;
+        auto character = inputFileContent[sIdx];
+        bool isNegative = character == 'L';
+        while(std::isdigit(inputFileContent[++sIdx]))
+        {
+            number = number * 10 + (inputFileContent[sIdx] - '0');
+        }
+
+        rotationSteps[rotationStepsCount++] = isNegative ? -number : number;
     }
 
     int32_t dialPosition = 50;
