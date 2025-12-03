@@ -4,42 +4,52 @@
 #include <string>
 #include <filesystem>
 
-// Calculate the index of the largest value in the given range from a pointer
-__attribute__((always_inline)) inline uint8_t largestValueIndex(uint8_t* batteries, uint8_t startIndex, uint8_t endIndex)
-{
-    uint8_t largestIdx = 0;
-    uint8_t largestValue = 0;
-    for(uint8_t i = startIndex; i < endIndex; i++)
-    {
-        uint8_t value = *(batteries + i);
-        if(value > largestValue)
-        {
-            largestValue = value;
-            largestIdx = i;
-
-            if(value == 9) // Early out, can't do better than 9
-                break;
-        }
-    }
-
-    return largestIdx;
-}
-
-// Calculate the "Joltage" value for given row and length
 __attribute__((always_inline)) inline uint64_t calculatedJoltage(uint8_t* batteries, uint8_t joltageLength)
 {
-    uint8_t lastHighestIdx = 0;
-    uint64_t total = 0;
+    // positions[d][count] = indexes where digit d occurs (0..99)
+    uint8_t positions[10][100];
+    uint8_t counts[10] = {0};
+    uint8_t idxPointers[10] = {0};
 
-    for(int i = joltageLength - 1; i >= 0; i--)
+    // Loop through row, and note the counts and positions of each digit
+    for(uint8_t i = 0; i < 100; ++i)
     {
-        // Find highest value in the range, with the end truncated by how many have already been taken
-        uint8_t highestIdx = largestValueIndex(batteries, lastHighestIdx, 100 - i);
-        uint8_t highest = *(batteries + highestIdx);
+        uint8_t d = batteries[i];
+        positions[d][counts[d]++] = i;
+    }
 
-        // Construct the total joltage number (base 10)
-        total = total * 10 + highest;
-        lastHighestIdx = highestIdx + 1;
+    uint64_t total = 0;
+    uint8_t startIndex = 0;
+
+    // Get the initial end index (ie, there must be room for remainder of joltage cells)
+    const uint8_t initialEnd = 101 - joltageLength;
+
+    // Scan through the digits
+    for(uint8_t t = 0; t < joltageLength; ++t)
+    {
+        // Allow for a futher end index based on how many cells have been chosen already
+        uint8_t endIndex = initialEnd + t;
+
+        // Pick highest digit available between indexes
+        for(int d = 9; d >= 0; --d)
+        {
+            uint8_t p = idxPointers[d];
+
+            // While pointer within range of counts, and position is before startIndex, advance pointer
+            while(p < counts[d] && positions[d][p] < startIndex) ++p;
+
+            // If pointer within range, and position is before endIndex, we can choose this digit
+            if(p < counts[d] && positions[d][p] < endIndex)
+            {
+                total = total * 10 + d;
+                startIndex = positions[d][p] + 1;
+                idxPointers[d] = p + 1;
+                break;
+            }
+
+            // Note where we scanned up to
+            idxPointers[d] = p;
+        }
     }
 
     return total;
