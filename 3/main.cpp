@@ -16,10 +16,10 @@ __attribute__((always_inline)) inline uint8_t largestValueIndex(uint8_t* batteri
         {
             largestValue = value;
             largestIdx = i;
-        }
 
-        if(value == 9) // Early out, can't do better than 9
-            break;
+            if(value == 9) // Early out, can't do better than 9
+                break;
+        }
     }
 
     return largestIdx;
