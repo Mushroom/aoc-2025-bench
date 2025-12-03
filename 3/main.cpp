@@ -11,11 +11,15 @@ __attribute__((always_inline)) inline uint8_t largestValueIndex(uint8_t* batteri
     uint8_t largestValue = 0;
     for(uint8_t i = startIndex; i < endIndex; i++)
     {
-        if(*(batteries + i) > largestValue)
+        uint8_t value = *(batteries + i);
+        if(value > largestValue)
         {
-            largestValue = *(batteries + i);
+            largestValue = value;
             largestIdx = i;
         }
+
+        if(value == 9) // Early out, can't do better than 9
+            break;
     }
 
     return largestIdx;
