@@ -4,24 +4,22 @@
 #include <string>
 #include <filesystem>
 
-// Define the size of the grid (with padding)
-#define ROW_SIZE (138 + 2)
-#define TOTAL_ROWS (138 + 2)
-
-#define NDEBUG 1
+// The size of the grid (with padding)
+uint32_t rowSize = 0;
+uint32_t totalRows = 0;
 
 __attribute__((always_inline)) inline size_t coordToIndex(size_t x, size_t y)
 { 
-    return y * ROW_SIZE + x;
+    return y * rowSize + x;
 }
 
 #if !NDEBUG
 void printPaperState(uint8_t* paperArray)
 {
     std::cout << "[DEBUG] Paper State:" << std::endl;
-    for (size_t y = 0; y < TOTAL_ROWS; y++)
+    for (size_t y = 0; y < totalRows; y++)
     {
-        for(size_t x = 0; x < ROW_SIZE; x++)
+        for(size_t x = 0; x < rowSize; x++)
         {
             std::cout << ((paperArray[coordToIndex(x, y)] == 1) ? '@' : '.');
         }
@@ -30,7 +28,7 @@ void printPaperState(uint8_t* paperArray)
 }
 #endif
 
-int FindViableRolls(uint8_t* paperArray, bool iterate)
+__attribute__((always_inline)) inline int FindViableRolls(uint8_t* paperArray, bool iterate)
 {
     bool foundViableRolls = true;
     int viableRollCount = 0;
@@ -49,9 +47,9 @@ int FindViableRolls(uint8_t* paperArray, bool iterate)
         foundViableRolls = false;
 
         // Go though the (padded) array
-        for (size_t y = 1; y < TOTAL_ROWS - 1; y++)
+        for (size_t y = 1; y < totalRows - 1; y++)
         {
-            for(size_t x = 1; x < ROW_SIZE - 1; x++)
+            for(size_t x = 1; x < rowSize - 1; x++)
             {
                 uint8_t paperCount = 0;
                 size_t currentArrayIndex = coordToIndex(x, y);
@@ -72,7 +70,7 @@ int FindViableRolls(uint8_t* paperArray, bool iterate)
                     {
                         if(k != 0 || l != 0)
                         {
-                            paperCount += *(rowPointer + l);
+                            paperCount += ((*(rowPointer + l)) != 0 ? 1 : 0);
                         }
                     }
 
@@ -129,16 +127,26 @@ int main(int argc, char* argv[])
     std::ifstream inputFileStream(inputFilePath, std::ios::in | std::ios::binary);
     const auto fileStreamSize = std::filesystem::file_size(inputFilePath);
     char* inputFileContent = new char[fileStreamSize];
+    char* inputFileScanPointer = inputFileContent;
     inputFileStream.read(inputFileContent, fileStreamSize);
 
+    // Search for the first newline to determine grid size
+    while (*(inputFileScanPointer++) != '\n')
+    {
+        rowSize++;
+    }
+
+    rowSize += 2;
+    totalRows = rowSize;
+
     // Parse the char array into a padded byte array, where a 1 indicates a roll
-    uint8_t paperArray[(ROW_SIZE) * (TOTAL_ROWS)] = {0};
+    uint8_t* paperArray = new uint8_t[(rowSize) * (totalRows)]();
     size_t sIdx = 0;
 
     // Note we don't start at zero, as we pad the array
-    for (size_t i = 1; i < TOTAL_ROWS - 1; i++)
+    for (size_t i = 1; i < totalRows - 1; i++)
     {
-        for(size_t j = 1; j < ROW_SIZE - 1; j++)
+        for(size_t j = 1; j < rowSize - 1; j++)
         {
             if (inputFileContent[sIdx] == '@')
             {
