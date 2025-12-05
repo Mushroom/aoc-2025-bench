@@ -62,21 +62,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Part 1
-    uint64_t freshIngredientCount = 0;
-    for(auto& ingredient : availableIngredients)
-    {
-        for(int i = 0; i < ranges.size(); i++)
-        {
-            if(ranges[i].first <= ingredient && ranges[i].second >= ingredient)
-            {
-                std::cout << ingredient << " is fresh" << std::endl;
-                freshIngredientCount++;
-                break;
-            }
-        }
-    }
-
     // Part 2
     uint64_t availableIngredientCount = 0;
     // Sort the ranges based on the first value
@@ -103,9 +88,19 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Sum the contained values in the ranges (inclusive, so +1)
+    uint64_t freshIngredientCount = 0;
     for(auto& concatRange : concatRanges)
     {
+        // Do part 1
+        for(auto& ingredient : availableIngredients)
+        {
+            if(concatRange.first <= ingredient && concatRange.second >= ingredient)
+            {
+                freshIngredientCount++;
+            }
+        }
+
+        // Sum the contained values in the ranges (inclusive, so +1)
         availableIngredientCount += (concatRange.second - concatRange.first + 1);
     }
 
