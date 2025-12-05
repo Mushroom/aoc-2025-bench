@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <algorithm>
 
 int main(int argc, char* argv[])
 {
